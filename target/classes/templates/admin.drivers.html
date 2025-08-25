@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: layout (~{::body})">
+<body>
+<div th:fragment="content">
+    <h2>Manage Drivers</h2>
+    <form method="post" action="/admin/drivers">
+        <input name="name" placeholder="Name" required>
+        <input name="phone" placeholder="Phone" required>
+        <input name="city" placeholder="City" required>
+        <button>Add Driver</button>
+    </form>
+    <table>
+        <tr><th>ID</th><th>Name</th><th>Phone</th><th>City</th><th>Active</th></tr>
+        <tr th:each="d : ${drivers}">
+            <td th:text="${d.id}"></td>
+            <td th:text="${d.name}"></td>
+            <td th:text="${d.phone}"></td>
+            <td th:text="${d.city}"></td>
+            <td th:text="${d.active}"></td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>

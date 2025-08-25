@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: layout (~{::body})">
+<body>
+<div th:fragment="content">
+    <h2>Register</h2>
+    <form method="post" action="/register">
+        <input name="name" placeholder="Full Name" required>
+        <input name="email" placeholder="Email" required>
+        <input name="password" type="password" placeholder="Password" required>
+        <button type="submit">Create Account</button>
+    </form>
+    <p th:if="${error}" th:text="${error}" style="color:red"></p>
+    <p th:if="${msg}" th:text="${msg}" style="color:green"></p>
+</div>
+</body>
+</html>

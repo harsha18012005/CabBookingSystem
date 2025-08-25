@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: layout (~{::body})">
+<body>
+<div th:fragment="content">
+    <h2>Manage Cabs</h2>
+    <form method="post" action="/admin/cabs">
+        <input name="registrationNo" placeholder="Registration No" required>
+        <input name="model" placeholder="Model" required>
+        <input name="city" placeholder="City" required>
+        <input name="status" placeholder="Status (AVAILABLE/INACTIVE)" value="AVAILABLE">
+        <button>Add Cab</button>
+    </form>
+    <table>
+        <tr><th>ID</th><th>Reg No</th><th>Model</th><th>City</th><th>Status</th><th>Driver</th></tr>
+        <tr th:each="c : ${cabs}">
+            <td th:text="${c.id}"></td>
+            <td th:text="${c.registrationNo}"></td>
+            <td th:text="${c.model}"></td>
+            <td th:text="${c.city}"></td>
+            <td th:text="${c.status}"></td>
+            <td th:text="${c.driver != null ? c.driver.name : '—'}"></td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>

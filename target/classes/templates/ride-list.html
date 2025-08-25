@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: layout (~{::body})">
+<body>
+<div th:fragment="content">
+    <h2>My Rides</h2>
+    <table>
+        <tr><th>ID</th><th>City</th><th>Pickup</th><th>Drop</th><th>Status</th><th>Fare</th><th>Action</th></tr>
+        <tr th:each="r : ${rides}">
+            <td th:text="${r.id}"></td>
+            <td th:text="${r.city}"></td>
+            <td th:text="${r.pickup}"></td>
+            <td th:text="${r.dropoff}"></td>
+            <td th:text="${r.status}"></td>
+            <td th:text="${r.fare}"></td>
+            <td>
+                <form th:if="${r.status=='ACCEPTED' || r.status=='ONGOING'}" method="post" th:action="@{'/rides/' + ${r.id} + '/status'}">
+                    <select name="status">
+                        <option>ONGOING</option>
+                        <option>COMPLETED</option>
+                        <option>CANCELLED</option>
+                    </select>
+                    <button type="submit">Update</button>
+                </form>
+            </td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>
