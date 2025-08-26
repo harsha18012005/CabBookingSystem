@@ -83,8 +83,6 @@
 				<version>3.11.0</version>
 				<configuration>
 					<release>17</release>
-					<source>17</source>
-					<target>17</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -93,11 +91,6 @@
 				<configuration>
 				<mainClass>cab.demo.CabbookingApplication</mainClass>
 			</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>3.4.5</version>
 			</plugin>
 		</plugins>
 		</pluginManagement>
