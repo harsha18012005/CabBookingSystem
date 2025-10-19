@@ -22,4 +22,4 @@ RUN ./mvnw clean package -DskipTests
 EXPOSE 8080
 
 # Start the Spring Boot JAR
-CMD ["java", "-jar", "target/CabBookingSystem-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "target/cabbooking-0.0.1-SNAPSHOT.jar"]
