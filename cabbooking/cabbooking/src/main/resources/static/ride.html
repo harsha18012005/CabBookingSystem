@@ -1,0 +1,119 @@
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Create Ride</title>-->
+<!--    <link rel="stylesheet" href="ride.css">-->
+<!--</head>-->
+<!--<body>-->
+<!--<h2>Create Ride</h2>-->
+<!--<form id="rideForm">-->
+<!--    <input type="text" name="pickup" placeholder="Pickup Location" required><br>-->
+<!--    <input type="text" name="destination" placeholder="Destination" required><br>-->
+<!--    <input type="number" name="distance" placeholder="Distance (km)" step="0.01" required><br>-->
+<!--    <input type="number" name="time" placeholder="Time (minutes)" step="0.01" required><br>-->
+<!--    <input type="number" name="userId" placeholder="User ID" required><br>-->
+<!--    <input type="number" name="driverId" placeholder="Driver ID" required><br>-->
+<!--    <button type="submit">Create Ride</button>-->
+<!--</form>-->
+
+<!--<script>-->
+<!--    const form = document.getElementById('rideForm');-->
+
+<!--    form.addEventListener('submit', async (e) => {-->
+<!--      e.preventDefault();-->
+
+<!--      const data = {-->
+<!--        pickup: form.pickup.value,-->
+<!--        destination: form.destination.value,-->
+<!--        distance: parseFloat(form.distance.value),-->
+<!--        time: parseFloat(form.time.value)-->
+<!--      };-->
+
+<!--      const userId = parseInt(form.userId.value);-->
+<!--      const driverId = parseInt(form.driverId.value);-->
+
+<!--      try {-->
+<!--        const res = await fetch(`http://localhost:8080/api/rides?userId=${userId}&driverId=${driverId}`, {-->
+<!--          method: 'POST',-->
+<!--          headers: { 'Content-Type': 'application/json' },-->
+<!--          body: JSON.stringify(data)-->
+<!--        });-->
+
+<!--        if(res.ok){-->
+<!--          const ride = await res.json();-->
+<!--          alert('Ride created successfully! Ride ID: ' + ride.id);-->
+<!--          form.reset();-->
+<!--        } else {-->
+<!--          const msg = await res.text();-->
+<!--          alert('Failed to create ride: ' + msg);-->
+<!--        }-->
+<!--      } catch(err) {-->
+<!--        console.error(err);-->
+<!--        alert('Error connecting to backend');-->
+<!--      }-->
+<!--    });-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Ride</title>
+    <link rel="stylesheet" href="ride.css">
+</head>
+<body>
+<h2>Create Ride</h2>
+<form id="rideForm">
+    <input type="text" name="pickup" placeholder="Pickup Location" required><br>
+    <input type="text" name="destination" placeholder="Destination" required><br>
+    <input type="number" name="distance" placeholder="Distance (km)" step="0.01" required><br>
+    <input type="number" name="time" placeholder="Time (minutes)" step="0.01" required><br>
+    <input type="number" name="userId" placeholder="User ID" required><br>
+    <button type="submit">Create Ride</button>
+</form>
+
+<script>
+    const form = document.getElementById('rideForm');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        pickup: form.pickup.value,
+        destination: form.destination.value,
+        distance: parseFloat(form.distance.value),
+        time: parseFloat(form.time.value)
+      };
+
+      const userId = parseInt(form.userId.value);
+
+      try {
+        // Note: No driverId is passed. Backend will assign one automatically
+        const res = await fetch(`http://localhost:8080/api/rides?userId=${userId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if(res.ok){
+          const ride = await res.json();
+          alert('Ride created successfully! Ride ID: ' + ride.id +
+                '\nAssigned Driver ID: ' + ride.driver.driverId);
+          form.reset();
+        } else {
+          const msg = await res.text();
+          alert('Failed to create ride: ' + msg);
+        }
+      } catch(err) {
+        console.error(err);
+        alert('Error connecting to backend');
+      }
+    });
+</script>
+</body>
+</html>

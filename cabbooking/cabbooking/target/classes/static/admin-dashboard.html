@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h2 { margin-bottom: 10px; }
+        nav { margin-bottom: 20px; }
+        nav button { margin-right: 5px; padding: 10px; cursor: pointer; }
+        section { display: none; }
+        section.active { display: block; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        table, th, td { border: 1px solid #ccc; }
+        th, td { padding: 8px; text-align: left; }
+        form { margin: 10px 0; padding: 10px; border: 1px solid #ccc; display: none; }
+        form input, form select { margin: 5px; padding: 5px; }
+        button.action { background: red; color: white; border: none; padding: 5px 8px; cursor: pointer; }
+        button.add-btn { background: green; color: white; border: none; padding: 6px 10px; cursor: pointer; margin-bottom:5px; }
+    </style>
+</head>
+<body>
+
+<h2>Admin Dashboard</h2>
+<nav>
+    <button data-tab="users">Users</button>
+    <button data-tab="drivers">Drivers</button>
+    <button data-tab="rides">Rides</button>
+</nav>
+
+<!-- Users Section -->
+<section id="users" class="active">
+    <h3>Users</h3>
+    <button class="add-btn" id="showAddUserFormBtn">Add User</button>
+    <form id="addUserForm">
+        <input type="text" name="fullName" placeholder="Full Name" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Submit</button>
+    </form>
+    <table id="usersTable">
+        <thead>
+        <tr>
+            <th>User ID</th><th>Full Name</th><th>Email</th><th>Password</th><th>Action</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</section>
+
+<!-- Drivers Section -->
+<section id="drivers">
+    <h3>Drivers</h3>
+    <button class="add-btn" id="showAddDriverFormBtn">Add Driver</button>
+    <form id="addDriverForm">
+        <input type="text" name="fullName" placeholder="Full Name" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <input type="text" name="phone" placeholder="Phone" required>
+        <input type="text" name="vehicleModel" placeholder="Vehicle Model" required>
+        <input type="text" name="vehicleNumber" placeholder="Vehicle Number" required>
+        <input type="text" name="aadhaarNumber" placeholder="Aadhaar Number">
+        <input type="text" name="licenseNumber" placeholder="License Number">
+        <button type="submit">Submit</button>
+    </form>
+    <table id="driversTable">
+        <thead>
+        <tr>
+            <th>Driver ID</th><th>Full Name</th><th>Email</th><th>Password</th><th>Phone</th>
+            <th>Vehicle</th><th>Aadhaar</th><th>License</th><th>Action</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</section>
+
+<!-- Rides Section -->
+<section id="rides">
+    <h3>Rides</h3>
+    <button class="add-btn" id="showAddRideFormBtn">Add Ride</button>
+    <form id="addRideForm">
+        <input type="number" name="userId" placeholder="User ID" required>
+        <input type="text" name="pickup" placeholder="Pickup" required>
+        <input type="text" name="destination" placeholder="Destination" required>
+        <input type="number" name="distance" placeholder="Distance (km)">
+        <input type="number" name="time" placeholder="Time (minutes)">
+        <select name="status">
+            <option value="REQUESTED">REQUESTED</option>
+            <option value="ACCEPTED">ACCEPTED</option>
+            <option value="STARTED">STARTED</option>
+            <option value="FINISHED">FINISHED</option>
+            <option value="CANCELLED">CANCELLED</option>
+        </select>
+        <button type="submit">Submit</button>
+    </form>
+    <table id="ridesTable">
+        <thead>
+        <tr>
+            <th>User ID</th><th>Driver ID</th><th>Pickup</th><th>Destination</th>
+            <th>Status</th><th>Fare</th><th>Action</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</section>
+
+<script>
+    const API_BASE = 'http://localhost:8080/api';
+    const tabs = document.querySelectorAll('nav button');
+    const sections = document.querySelectorAll('section');
+
+    // Tab switching
+    tabs.forEach(btn => {
+        btn.addEventListener('click', () => {
+            sections.forEach(s => s.classList.remove('active'));
+            document.getElementById(btn.dataset.tab).classList.add('active');
+        });
+    });
+
+    // Show/hide forms
+    document.getElementById('showAddUserFormBtn').onclick = () => {
+        const f = document.getElementById('addUserForm');
+        f.style.display = f.style.display==='block'?'none':'block';
+    };
+    document.getElementById('showAddDriverFormBtn').onclick = () => {
+        const f = document.getElementById('addDriverForm');
+        f.style.display = f.style.display==='block'?'none':'block';
+    };
+    document.getElementById('showAddRideFormBtn').onclick = () => {
+        const f = document.getElementById('addRideForm');
+        f.style.display = f.style.display==='block'?'none':'block';
+    };
+
+    // Render functions
+    const renderUser = u => `
+    <tr>
+        <td>${u.userId}</td>
+        <td>${u.fullName}</td>
+        <td>${u.email}</td>
+        <td>${u.password}</td>
+        <td><button class="action" onclick="deleteUser(${u.userId})">Delete</button></td>
+    </tr>`;
+
+    const renderDriver = d => `
+    <tr>
+        <td>${d.driverId}</td>
+        <td>${d.fullName}</td>
+        <td>${d.email}</td>
+        <td>${d.password}</td>
+        <td>${d.phone}</td>
+        <td>${d.vehicleModel} (${d.vehicleNumber})</td>
+        <td>${d.aadhaarNumber || ''}</td>
+        <td>${d.licenseNumber || ''}</td>
+        <td><button class="action" onclick="deleteDriver(${d.driverId})">Delete</button></td>
+    </tr>`;
+
+    const renderRide = r => `
+    <tr>
+        <td>${r.userId || '-'}</td>
+        <td>${r.driverId || '-'}</td>
+        <td>${r.pickup}</td>
+        <td>${r.destination}</td>
+        <td>${r.status}</td>
+        <td>${r.fare || '-'}</td>
+        <td>
+            <button class="action" onclick="deleteRide(${r.userId}, ${r.driverId})">Delete</button>
+        </td>
+    </tr>`;
+
+    // Fetch and render
+    async function fetchAndRender(url, tbody, renderFn){
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            tbody.innerHTML = data.map(renderFn).join('');
+        } catch(e){ console.error(e); }
+    }
+
+    // Load functions
+    function loadUsers(){ fetchAndRender(`${API_BASE}/users`, document.querySelector('#usersTable tbody'), renderUser); }
+    function loadDrivers(){ fetchAndRender(`${API_BASE}/drivers`, document.querySelector('#driversTable tbody'), renderDriver); }
+    function loadRides(){ fetchAndRender(`${API_BASE}/rides`, document.querySelector('#ridesTable tbody'), renderRide); }
+
+    // Delete functions
+    async function deleteUser(userId){
+        if(!confirm('Delete user?')) return;
+        await fetch(`${API_BASE}/users/${userId}`, { method:'DELETE' });
+        loadUsers();
+    }
+    async function deleteDriver(driverId){
+        if(!confirm('Delete driver?')) return;
+        await fetch(`${API_BASE}/drivers/${driverId}`, { method:'DELETE' });
+        loadDrivers();
+    }
+    async function deleteRide(userId, driverId){
+        if(!confirm('Delete ride?')) return;
+        await fetch(`${API_BASE}/rides?userId=${userId}&driverId=${driverId}`, { method:'DELETE' });
+        loadRides();
+    }
+
+    // Add form submit
+    document.getElementById('addUserForm').addEventListener('submit', async e=>{
+        e.preventDefault();
+        const f = Object.fromEntries(new FormData(e.target).entries());
+        await fetch(`${API_BASE}/users`,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(f)});
+        e.target.reset(); e.target.style.display='none'; loadUsers();
+    });
+
+    document.getElementById('addDriverForm').addEventListener('submit', async e=>{
+        e.preventDefault();
+        const f = Object.fromEntries(new FormData(e.target).entries());
+        await fetch(`${API_BASE}/drivers`,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(f)});
+        e.target.reset(); e.target.style.display='none'; loadDrivers();
+    });
+
+    document.getElementById('addRideForm').addEventListener('submit', async e=>{
+        e.preventDefault();
+        const f = Object.fromEntries(new FormData(e.target).entries());
+        // Assign random driver
+        let driverId = null;
+        try {
+            const res = await fetch(`${API_BASE}/drivers`);
+            const drivers = await res.json();
+            if(drivers.length>0){
+                driverId = drivers[Math.floor(Math.random()*drivers.length)].driverId;
+            }
+        } catch(err){ console.error(err); }
+
+        const payload = {
+            userId: parseInt(f.userId),
+            driverId,
+            pickup: f.pickup,
+            destination: f.destination,
+            distance: f.distance ? parseFloat(f.distance) : 0,
+            time: f.time ? parseFloat(f.time) : 0,
+            status: f.status
+        };
+        await fetch(`${API_BASE}/rides`,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+        e.target.reset(); e.target.style.display='none'; loadRides();
+    });
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', ()=>{
+        loadUsers(); loadDrivers(); loadRides();
+    });
+</script>
+</body>
+</html>
+
+
+
+
+
