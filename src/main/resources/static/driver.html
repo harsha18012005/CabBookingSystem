@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Registration</title>
+  <link rel="stylesheet" href="Driver.css">
+</head>
+<body>
+<h2>Driver Registration</h2>
+<form id="driverForm">
+  <input type="text" name="fullName" placeholder="Full Name" required><br>
+  <input type="email" name="email" placeholder="Email" required><br>
+  <input type="text" name="phone" placeholder="Phone" required><br>
+  <input type="text" name="vehicleNumber" placeholder="Vehicle Number" required><br>
+  <input type="text" name="vehicleModel" placeholder="Vehicle Model" required><br>
+  <input type="text" name="aadhaarNumber" placeholder="Aadhaar Number" required><br>
+  <input type="text" name="licenseNumber" placeholder="License Number" required><br>
+  <input type="password" name="password" placeholder="Password" required><br>
+  <button type="submit">Register Driver</button>
+</form>
+
+<script>
+  const form = document.getElementById('driverForm');
+  form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const data = {
+          fullName: form.fullName.value,
+          email: form.email.value,
+          phone: form.phone.value,
+          vehicleNumber: form.vehicleNumber.value,
+          vehicleModel: form.vehicleModel.value,
+          aadhaarNumber: form.aadhaarNumber.value,
+          licenseNumber: form.licenseNumber.value,
+          password: form.password.value
+      };
+
+      try {
+          const res = await fetch('http://localhost:8080/api/drivers', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+          });
+
+          if (res.ok) {
+              const driver = await res.json();
+              alert('Driver registered successfully! Driver ID: ' + driver.driverId);
+              form.reset();
+          } else {
+              const msg = await res.text();
+              alert('Registration failed: ' + msg);
+          }
+      } catch(err){
+          console.error(err);
+          alert('Error connecting to backend');
+      }
+  });
+</script>
+</body>
+</html>

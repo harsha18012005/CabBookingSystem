@@ -1,0 +1,211 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Create Ride</title>-->
+<!--    <link rel="stylesheet" href="ride.css">-->
+<!--</head>-->
+<!--<body>-->
+<!--<h2>Create Ride</h2>-->
+<!--<form id="rideForm">-->
+<!--    <input type="text" name="pickup" placeholder="Pickup Location" required><br>-->
+<!--    <input type="text" name="destination" placeholder="Destination" required><br>-->
+<!--    <input type="number" name="distance" placeholder="Distance (km)" step="0.01" required><br>-->
+<!--    <input type="number" name="time" placeholder="Time (minutes)" step="0.01" required><br>-->
+<!--    <input type="number" name="userId" placeholder="User ID" required><br>-->
+<!--    <button type="submit">Create Ride</button>-->
+<!--</form>-->
+<!--<div id="map" style="width: 600px; height: 400px;"></div>-->
+
+<!--<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>-->
+<!--<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />-->
+
+<!--<script>-->
+<!--    // Initialize map-->
+<!--    var map = L.map('map').setView([13.0827, 80.2707], 12); // Chennai coords-->
+
+<!--    // Load OpenStreetMap tiles-->
+<!--    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {-->
+<!--        attribution: '&copy; OpenStreetMap contributors'-->
+<!--    }).addTo(map);-->
+
+<!--    // Marker for pickup-->
+<!--    var pickupMarker = L.marker([13.0827, 80.2707]).addTo(map)-->
+<!--        .bindPopup('Pickup Location')-->
+<!--        .openPopup();-->
+
+<!--    // Marker for destination-->
+<!--    var destinationMarker = L.marker([13.0850, 80.2780]).addTo(map)-->
+<!--        .bindPopup('Destination')-->
+<!--        .openPopup();-->
+<!--</script>-->
+
+
+<!--<script>-->
+<!--    const form = document.getElementById('rideForm');-->
+
+<!--    form.addEventListener('submit', async (e) => {-->
+<!--      e.preventDefault();-->
+
+<!--      const data = {-->
+<!--        pickup: form.pickup.value,-->
+<!--        destination: form.destination.value,-->
+<!--        distance: parseFloat(form.distance.value),-->
+<!--        time: parseFloat(form.time.value)-->
+<!--      };-->
+
+<!--      const userId = parseInt(form.userId.value);-->
+
+<!--      try {-->
+<!--        // Note: No driverId is passed. Backend will assign one automatically-->
+<!--        const res = await fetch(`http://localhost:8080/api/rides?userId=${userId}`, {-->
+<!--          method: 'POST',-->
+<!--          headers: { 'Content-Type': 'application/json' },-->
+<!--          body: JSON.stringify(data)-->
+<!--        });-->
+
+<!--        if(res.ok){-->
+<!--          const ride = await res.json();-->
+<!--          alert('Ride created successfully! Ride ID: ' + ride.id +-->
+<!--                '\nAssigned Driver ID: ' + ride.driver.driverId);-->
+<!--          form.reset();-->
+<!--        } else {-->
+<!--          const msg = await res.text();-->
+<!--          alert('Failed to create ride: ' + msg);-->
+<!--        }-->
+<!--      } catch(err) {-->
+<!--        console.error(err);-->
+<!--        alert('Error connecting to backend');-->
+<!--      }-->
+<!--    });-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request a Ride</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body { font-family: Arial; padding: 20px; text-align: center; }
+        #map { height: 400px; width: 100%; margin-top: 20px; }
+        input { margin: 5px; padding: 8px; width: 200px; }
+        button { padding: 8px 15px; cursor: pointer; }
+        #distance, #eta { margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<h2>Request a Ride</h2>
+
+<label>User ID:</label>
+<input type="text" id="userId" placeholder="Enter your User ID"><br>
+
+<label>Pickup:</label>
+<input type="text" id="pickup" placeholder="Enter pickup location"><br>
+
+<label>Destination:</label>
+<input type="text" id="destination" placeholder="Enter destination"><br>
+
+<button id="showMapBtn">Show on Map</button>
+<button id="requestRideBtn">Request Ride</button>
+
+<div id="map"></div>
+<p id="distance"></p>
+<p id="eta"></p>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    const API_BASE = 'http://localhost:8080/api';
+
+    let map = L.map('map').setView([13.0827, 80.2707], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let pickupMarker, destinationMarker, line;
+    let pickupCoords, destCoords, distanceKm, etaMinutes;
+
+    async function geocode(address){
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+        const data = await res.json();
+        return data.length > 0 ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
+    }
+
+    function getDistance(lat1, lon1, lat2, lon2){
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    document.getElementById('showMapBtn').addEventListener('click', async () => {
+        const pickup = document.getElementById('pickup').value;
+        const destination = document.getElementById('destination').value;
+
+        if(!pickup || !destination){ alert('Enter both pickup and destination!'); return; }
+
+        pickupCoords = await geocode(pickup);
+        destCoords = await geocode(destination);
+
+        if(!pickupCoords || !destCoords){ alert('Could not find one of the locations'); return; }
+
+        if(pickupMarker) map.removeLayer(pickupMarker);
+        if(destinationMarker) map.removeLayer(destinationMarker);
+        if(line) map.removeLayer(line);
+
+        pickupMarker = L.marker(pickupCoords).addTo(map).bindPopup('Pickup: ' + pickup).openPopup();
+        destinationMarker = L.marker(destCoords).addTo(map).bindPopup('Destination: ' + destination).openPopup();
+        line = L.polyline([pickupCoords, destCoords], {color:'blue'}).addTo(map);
+
+        map.fitBounds(L.featureGroup([pickupMarker, destinationMarker]).getBounds().pad(0.5));
+
+        distanceKm = getDistance(pickupCoords[0], pickupCoords[1], destCoords[0], destCoords[1]).toFixed(2);
+        document.getElementById('distance').textContent = `Approx. Distance: ${distanceKm} km`;
+        etaMinutes = Math.round((distanceKm / 40) * 60);
+        document.getElementById('eta').textContent = `Estimated Time: ${etaMinutes} minutes`;
+    });
+
+    document.getElementById('requestRideBtn').addEventListener('click', async () => {
+        const userId = document.getElementById('userId').value;
+        if(!userId){ alert('Please enter your User ID!'); return; }
+        if(!pickupCoords || !destCoords){ alert('Please show locations on map first!'); return; }
+
+        const ridePayload = {
+            pickup: document.getElementById('pickup').value,
+            destination: document.getElementById('destination').value,
+            distance: parseFloat(distanceKm),
+            time: etaMinutes,
+            status: "REQUESTED"
+        };
+
+        try {
+            const res = await fetch(`${API_BASE}/rides?userId=${userId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(ridePayload)
+            });
+
+            if(res.ok){
+                alert(' Ride requested successfully!');
+            } else {
+                const msg = await res.text();
+                alert(' Failed to request ride: ' + msg);
+            }
+        } catch(err){
+            console.error(err);
+            alert('Server error!');
+        }
+    });
+</script>
+</body>
+</html>
+
+
+
+

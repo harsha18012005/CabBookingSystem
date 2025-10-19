@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="Driver.css">
+    <style>
+        body { font-family: Arial; padding:50px; text-align:center; }
+        input { margin:10px; padding:8px; width:200px; }
+        button { padding:8px 15px; cursor:pointer; }
+        #error { color:red; }
+    </style>
+</head>
+<body>
+
+<h2>Admin Login</h2>
+<form id="loginForm">
+    <input type="text" id="username" placeholder="Username" required><br>
+    <input type="password" id="password" placeholder="Password" required><br>
+    <button type="submit">Login</button>
+</form>
+<p id="error"></p>
+
+<script>
+    const API_URL = "http://localhost:8080/api/admins";
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const res = await fetch(`${API_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            if(res.ok){
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                sessionStorage.setItem('adminUsername', username);
+                window.location.href = 'admin-dashboard.html';
+            } else {
+                const msg = await res.text();
+                document.getElementById('error').textContent = msg;
+            }
+        } catch(err) {
+            console.error(err);
+            document.getElementById('error').textContent = "Server error!";
+        }
+    });
+</script>
+
+</body>
+</html>
+
+
