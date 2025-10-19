@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: CabBookingSystem-backend
+    name: CabBookingSystem-backend1
     env: java
     buildCommand: ./render-build.sh
     startCommand: java -jar target/*.jar
