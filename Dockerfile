@@ -1,25 +1,23 @@
-# Use official OpenJDK 17
+
 FROM openjdk:17-jdk-slim
 
-# Set working directory
 WORKDIR /app
 
-# Copy Maven wrapper and pom.xml
 COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
 
-# Copy source code
 COPY src ./src
 
-# Make Maven wrapper executable
 RUN chmod +x mvnw
 
-# Build the Spring Boot app
 RUN ./mvnw clean package -DskipTests
 
-# Expose port 8080
 EXPOSE 8080
 
-# Start the Spring Boot JAR
 CMD ["java", "-jar", "target/cabbooking-0.0.1-SNAPSHOT.jar"]
+ENV SPRING_DATASOURCE_URL=jdbc:postgresql://dpg-d3qgr38dl3ps73bur920-a.oregon-postgres.render.com:5432/cabbooking_cglc?sslmode:require
+ENV SPRING_DATASOURCE_USERNAME=harsha
+ENV SPRING_DATASOURCE_PASSWORD=uLwwhHmgu6YRSoAk1nv5JI8YBPZsNuYc
+
+ENTRYPOINT ["java","-jar","app.jar"]
