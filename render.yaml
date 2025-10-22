@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: CabBookingSystem-backend2
+    name: CabBookingSystem-1
     env: java
     buildCommand: ./mvnw clean package -DskipTests
     startCommand: java -jar target/CabBookingSystem-0.0.1-SNAPSHOT.jar
