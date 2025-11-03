@@ -282,20 +282,14 @@
 
 <script>
     const API_BASE = 'http://localhost:8080/api';
-
-    // Admin login check
     if(sessionStorage.getItem('adminLoggedIn') !== 'true'){
         alert('Please login first!');
         window.location.href = "admin-login.html";
     }
-
-    // Logout
     document.getElementById('logoutBtn').addEventListener('click', ()=>{
         sessionStorage.removeItem('adminLoggedIn');
         window.location.href = "admin-login.html";
     });
-
-    // Tab switching
     const tabs = document.querySelectorAll('nav button');
     const sections = document.querySelectorAll('section');
     tabs.forEach(btn=>{
@@ -304,8 +298,6 @@
             document.getElementById(btn.dataset.tab).classList.add('active');
         });
     });
-
-    // Fetch and render
     async function fetchAndRender(url, tbody, renderFn){
         try {
             const res = await fetch(url);
@@ -339,18 +331,25 @@
             <td><button class="action" onclick="deleteRide(${r.id})">Delete</button></td>
         </tr>`;
     }
-
-    // Load data
     async function loadUsers(){ await fetchAndRender(`${API_BASE}/users`, document.querySelector('#usersTable tbody'), renderUser);}
     async function loadDrivers(){ await fetchAndRender(`${API_BASE}/drivers`, document.querySelector('#driversTable tbody'), renderDriver);}
     async function loadRides(){ await fetchAndRender(`${API_BASE}/rides`, document.querySelector('#ridesTable tbody'), renderRide);}
+    async function deleteUser(id){
+       if(!confirm('Delete user?')) return;
+      const res = await fetch(`${API_BASE}/users/${id}`, {method:'DELETE'});
+       if(res.ok){ alert('Deleted!'); loadUsers(); } else alert('Failed!');
+   }
+    async function deleteDriver(id){
+        if(!confirm('Delete driver?')) return;
+        const res = await fetch(`${API_BASE}/drivers/${id}`, {method:'DELETE'});
+        if(res.ok){ alert('Deleted!'); loadDrivers(); } else alert('Failed!');
+   }
+    async function deleteRide(id){
+        if(!confirm('Delete ride?')) return;
+        const res = await fetch(`${API_BASE}/rides/${id}`, {method:'DELETE'});
+        if(res.ok){ alert('Deleted!'); loadRides(); } else alert('Failed!');
+    }
 
-    // Delete functions
-    async function deleteUser(id){ if(!confirm('Delete user?')) return; await fetch(`${API_BASE}/users/${id}`, {method:'DELETE'}); loadUsers();}
-    async function deleteDriver(id){ if(!confirm('Delete driver?')) return; await fetch(`${API_BASE}/drivers/${id}`, {method:'DELETE'}); loadDrivers();}
-    async function deleteRide(id){ if(!confirm('Delete ride?')) return; await fetch(`${API_BASE}/rides/${id}`, {method:'DELETE'}); loadRides();}
-
-    // Load data on page load
     document.addEventListener('DOMContentLoaded', ()=>{
         loadUsers();
         loadDrivers();
